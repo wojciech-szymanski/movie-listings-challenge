@@ -1,23 +1,87 @@
 import React, { Component } from 'react';
+import Genre from './components/Genre';
 import Movie from './components/Movie';
+
+const apiConfig = {
+  apiKey: 'd11b3e371a1df4e9452d682d25f7c2fc',
+  baseURL: 'https://api.themoviedb.org/3'
+}
 
 class App extends Component {
   state = {
     movies: [],
-    apiKey: 'd11b3e371a1df4e9452d682d25f7c2fc'
+    genres: [],
+    filter: {
+      genres: []
+    }
   }
 
-  componentDidMount() {
-    fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${this.state.apiKey}&language=en-US&page=1`)
+  fetchData = (href, callback) => {
+    fetch(`${apiConfig.baseURL}${href}?api_key=${apiConfig.apiKey}&language=en-US&page=1`)
       .then(res => res.json())
-      .then(movieData => {
-        this.setState({
-          movies: movieData.results
-        });
-      })
+      .then(callback)
       .catch(err => {
         console.log(err);
       });
+  }
+
+  loadMovieData = () => {
+    this.fetchData('/movie/now_playing', movieData => {
+      if (movieData.results) {
+        this.setState({
+          movies: movieData.results.map(movie => ({
+            ...movie,
+            visible: true
+          }))
+        });
+      }
+    });
+  }
+
+  loadGenreData = () => {
+    this.fetchData('/genre/movie/list', genreData => {
+      if (genreData.genres) {
+        this.setState({
+          genres: genreData.genres
+        });
+      }
+    });
+  }
+
+  genreSelected = id => {
+    this.setState({
+      filter: {
+        genres: this.state.filter.genres.concat(id)
+      }
+    }, this.filterMovieList);
+  }
+
+  genreRemoved = id => {
+    this.setState({
+      filter: {
+        genres: this.state.filter.genres.filter(genreId => !(genreId === id))
+      }
+    }, this.filterMovieList);
+  }
+
+  filterMovieList = () => {
+    this.setState({
+      movies: this.state.movies.map(movie => ({
+        ...movie,
+        visible: this.state.filter.genres.every(genreId => movie.genre_ids.includes(genreId))
+      }))
+    });
+  }
+
+  printGenre = genre => 
+    <Genre key={`genre-${genre.id}`}
+      onSelected={ this.genreSelected }
+      onRemoved={ this.genreRemoved }
+      { ...genre } />
+
+  componentDidMount() {
+    this.loadMovieData();
+    this.loadGenreData();
   }
 
   render() {
@@ -31,11 +95,33 @@ class App extends Component {
               </div>
           </header>
           <main>
+              <div className="ui two column grid">
+                <div className="column">
+                  <div className="ui list">
+                    {
+                      this.state.genres
+                        .filter((genre, idx) => !(idx % 2))
+                        .map(this.printGenre)
+                    }
+                  </div>
+                </div>
+                <div className="column">
+                  <div className="ui list">
+                    {
+                      this.state.genres
+                        .filter((genre, idx) => idx % 2)
+                        .map(this.printGenre)
+                    }
+                  </div>
+                </div>
+              </div>
               <div className="ui three column grid">
                   {
-                      this.state.movies.map((movie, idx) =>
-                          <Movie key={ idx }
-                              { ...movie } />
+                    this.state.movies
+                      .filter(movie => movie.visible)
+                      .map((movie, idx) =>
+                        <Movie key={`movie-${idx}`}
+                            { ...movie } />
                       )
                   }
               </div>
