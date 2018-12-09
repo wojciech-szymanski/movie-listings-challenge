@@ -15,7 +15,9 @@ const Movie = (props) => {
                     <img src={`${imgBaseUrl}${props.poster_path}`} alt={ props.title } />
                 </div>
                 <div className="content">
-                    <a className="header" href="/">{ props.title }</a>
+                    <a className="header" href="/">
+                        { props.title.length > 25 ? props.title.slice(0, 25).concat('...') : props.title }
+                    </a>
                     <div className="description">{ movieGenres.join(', ') }</div>
                 </div>
                 <div className="extra content">

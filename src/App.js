@@ -16,6 +16,8 @@ class App extends Component {
     }
   }
 
+  sortMovies = (a, b) => b.vote_average - a.vote_average;
+
   fetchData = (href, callback) => {
     fetch(`${apiConfig.baseURL}${href}?api_key=${apiConfig.apiKey}&language=en-US&page=1`)
       .then(res => res.json())
@@ -29,10 +31,12 @@ class App extends Component {
     this.fetchData('/movie/now_playing', movieData => {
       if (movieData.results) {
         this.setState({
-          movies: movieData.results.map(movie => ({
-            ...movie,
-            visible: true
-          }))
+          movies: movieData.results
+            .map(movie => ({
+              ...movie,
+              visible: true
+            }))
+            .sort(this.sortMovies)
         });
       }
     });
@@ -66,10 +70,12 @@ class App extends Component {
 
   filterMovieList = () => {
     this.setState({
-      movies: this.state.movies.map(movie => ({
-        ...movie,
-        visible: this.state.filter.genres.every(genreId => movie.genre_ids.includes(genreId))
-      }))
+      movies: this.state.movies
+        .map(movie => ({
+          ...movie,
+          visible: this.state.filter.genres.every(genreId => movie.genre_ids.includes(genreId))
+        }))
+        .sort(this.sortMovies)
     });
   }
 
