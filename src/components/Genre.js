@@ -1,7 +1,6 @@
 import React from 'react';
 
 const Genre = (props) => {
-
   return (
     <div className="item">
       <div className="ui checkbox">

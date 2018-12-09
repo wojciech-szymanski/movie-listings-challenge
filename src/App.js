@@ -73,12 +73,6 @@ class App extends Component {
     });
   }
 
-  printGenre = genre => 
-    <Genre key={`genre-${genre.id}`}
-      onSelected={ this.genreSelected }
-      onRemoved={ this.genreRemoved }
-      { ...genre } />
-
   componentDidMount() {
     this.loadMovieData();
     this.loadGenreData();
@@ -95,36 +89,33 @@ class App extends Component {
               </div>
           </header>
           <main>
-              <div className="ui two column grid">
-                <div className="column">
-                  <div className="ui list">
-                    {
-                      this.state.genres
-                        .filter((genre, idx) => !(idx % 2))
-                        .map(this.printGenre)
-                    }
-                  </div>
-                </div>
-                <div className="column">
-                  <div className="ui list">
-                    {
-                      this.state.genres
-                        .filter((genre, idx) => idx % 2)
-                        .map(this.printGenre)
-                    }
-                  </div>
-                </div>
-              </div>
-              <div className="ui three column grid">
+            <div className="ui grid">
+              <div className="four wide column">  
+                <div className="ui list">
                   {
-                    this.state.movies
-                      .filter(movie => movie.visible)
-                      .map((movie, idx) =>
-                        <Movie key={`movie-${idx}`}
-                            { ...movie } />
-                      )
+                    this.state.genres.map(genre =>
+                      <Genre key={`genre-${genre.id}`}
+                        onSelected={ this.genreSelected }
+                        onRemoved={ this.genreRemoved }
+                        { ...genre } />
+                    )
                   }
+                </div>
               </div>
+              <div className="twelve wide column">              
+                <div className="ui four column grid">
+                    {
+                      this.state.movies
+                        .filter(movie => movie.visible)
+                        .map((movie, idx) =>
+                          <Movie key={`movie-${idx}`}
+                            genres={ this.state.genres }
+                            { ...movie } />
+                        )
+                    }
+                </div>
+              </div>
+            </div>
           </main>
       </div>
     );
